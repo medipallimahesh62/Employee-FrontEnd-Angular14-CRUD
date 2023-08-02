@@ -1,0 +1,140 @@
+<div class="container mt-5">
+     <div class="row mb-1">
+      <div class="col-14 text-left">
+        <button type="button" class="btn btn-info ml-4" style="background-color: #6495ED;" data-toggle="modal" data-target="#addEmployee" 
+          (click)="addEmployeeDetailsModal()">Add Employee</button>
+        <button type="button" class="btn btn-info ml-3" *ngIf="employeeList != null && employeeList.length > 0"
+          (click)="goToAddressComponent(true)">Address List</button>
+          <span style="margin-right: 10px;"></span>
+          <button class="btn btn-secondary ml-4"  (click)="downloadCSV()" ><i class="fa fa-download" aria-hidden="true"></i>
+            Download-CSV
+          </button>
+      </div>
+    </div>
+    <table class="table table-success table-striped" *ngIf="employeeList != null && employeeList.length > 0">
+      <thead  class="table-dark">
+        <tr>
+          <th>Sl#</th>
+          <th>Employee Name</th>
+          <th>Employee Email</th>
+          <th>Employee Phone</th>
+          <th>Date Of Birth</th>
+          <th>No Of Addresses</th>
+          <th>Edit</th>
+          <th>Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let employee of employeeList; let i=index" (click)="goToAddressComponent(false, $event, employee.id)">
+          <td>{{i+1}}</td>
+          <td>{{employee.employeeName}}</td>
+          <td>{{employee.employeeEmail}}</td>
+          <td>{{employee.employeePhone}}</td>
+          <td>{{employee.employeeDate}}</td>
+          <td>{{employee.addressCount}}</td>
+          <td>
+            <span class="fa fa-pencil text-primary pointer"
+             (click)="updateEmployeeDetailsModal(employee.id, employee.employeeName,employee.employeeEmail,employee.employeePhone,employee.employeeDate)"></span>
+          </td>
+          <td>
+            <span class="fa fa-trash text-danger pointer" (click)="deleteEmployeeDetailsModal(employee.id, employee.employeeName)">
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <nav aria-label="Page navigation example">
+      <ul *ngIf="employeeList.length > 0"  class="pagination justify-content-end">
+        <li class="page-item"><a class="page-link" (click)="getallEmp(0,pageSize,sortBy)">1</a></li>
+        <li class="page-item"><a class="page-link" (click)="getallEmp(1,pageSize,sortBy)">2</a></li>
+        <li class="page-item"><a class="page-link" (click)="getallEmp(2,pageSize,sortBy)">3</a></li>
+      </ul>
+    </nav>
+    <div *ngIf="employeeList == null || employeeList.length == 0" class="text-center margin-top-150">
+      <h4>employee Details are not added, please add one.</h4>
+    </div>
+  </div>
+  
+  <!-- Modal for adding employee -->
+  <div id="addEmployee" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+  
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">
+            <ng-container *ngIf="addEmployee">Add employee Details</ng-container>
+            <ng-container *ngIf="!addEmployee">Update employee Details</ng-container>
+          </h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form #employeeForm="ngForm">
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label>Name</label>
+                <input type="text" class="form-control" pattern="[a-zA-Z ]*" id="employeeName" 
+                [(ngModel)]="employeeDto.employeeName"
+                  name="employeeName">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label>Email</label>
+                <input type="email" class="form-control" pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$" id="employeeEmail"
+                  [(ngModel)]="employeeDto.employeeEmail" name="employeeEmail">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label>Phone Number </label>
+                <input type="number" class="form-control" pattern="[789][0-9]{9}" id="employeePhone" 
+                [(ngModel)]="employeeDto.employeePhone"
+                  name="employeePhone">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label class="form-label">Date of Birth</label>
+                <input type="date" name="employeeDate" [(ngModel)]="employeeDto.employeeDate"  class="form-control" required
+                  pattern="^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$">
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-info mt-3" data-dismiss="modal" [disabled]="!employeeForm.form.valid" (click)="saveEmployeeDetails()" >
+            submit
+          </button>
+          
+          <span></span>
+          <button (click)="gotoback()" class="btn btn-danger mt-3" data-dismiss="modal" style="margin-left: 10px;">back</button>
+       
+      </div>
+  
+    </div>
+  </div>
+  </div>
+  <!-- Modal for deleting employee -->
+  <div id="deleteEmployee" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+  
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header bg-danger">
+          <h4 class="modal-title">Delete Confirmation</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete {{employeeName}}?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" (click)="deleteEmployeeDetails()"
+           data-dismiss="modal"><i class="fa fa-thumbs-up"></i>&nbsp;Ok</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            <i class="fa fa-times"></i>&nbsp;Cancel</button>
+        </div>
+      </div>
+  
+    </div>
+  </div>
